@@ -33,9 +33,6 @@ fn debug_log_interpreter(
 @external(javascript, "./ffi.mjs", "get_input")
 fn get_input() -> String
 
-type Interpreter =
-  fn(Program, Tape, Stack) -> ProgramResult
-
 type Inst =
   String
 
@@ -133,26 +130,22 @@ fn ket(program: Program, tape: Tape, stack: Stack) -> ProgramResult {
   }
 }
 
-fn decode(inst: Inst) -> Interpreter {
-  debug_log(#("decode", inst))
-  case inst {
-    "+" -> add
-    "-" -> sub
-    ">" -> right
-    "<" -> left
-    "." -> print
-    "," -> input
-    "[" -> bra
-    "]" -> ket
-    _ -> interpret
-  }
-}
-
 fn interpret(program: Program, tape: Tape, stack: Stack) -> ProgramResult {
   debug_log_interpreter("interpret", program, tape, stack)
   case program {
     [] -> Ok(Nil)
-    [inst, ..rest] -> decode(inst)(rest, tape, stack)
+    [inst, ..rest] ->
+      case inst {
+        "+" -> add(rest, tape, stack)
+        "-" -> sub(rest, tape, stack)
+        ">" -> right(rest, tape, stack)
+        "<" -> left(rest, tape, stack)
+        "." -> print(rest, tape, stack)
+        "," -> input(rest, tape, stack)
+        "[" -> bra(rest, tape, stack)
+        "]" -> ket(rest, tape, stack)
+        _ -> interpret(rest, tape, stack)
+      }
   }
 }
 
